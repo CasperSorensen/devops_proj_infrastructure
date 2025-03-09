@@ -53,6 +53,13 @@ resource "azurerm_subnet" "FirewallSubnet" {
   address_prefixes     = ["10.0.3.0/27"]
 }
 
+resource "azurerm_subnet" "hub-AksClusterSubnet" {
+  name                 = "hub-AksClusterSubnet"
+  resource_group_name  = azurerm_resource_group.Networking-Hub-RG.name
+  virtual_network_name = azurerm_resource_group.Networking-Hub-RG.name
+  address_prefixes     = ["10.0.4.0/27"]
+}
+
 # Spoke configuration
 resource "azurerm_virtual_network" "spoke-vnet" {
   name                = "spoke-vnet"
@@ -126,6 +133,15 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
 
   tags = {
     environment = "Development"
+  }
+
+  #Enable Azure CNI for custom networking
+  network_profile {
+    network_plugin = "azure"
+    network_policy = "calico"
+
+    # Connect the AKS cluster to the ArgoCD subnet in the Hub VNet
+    #subnet = azure
   }
 }
 
